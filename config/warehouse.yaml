@@ -1,0 +1,19 @@
+warehouse:
+  sdf: worlds/final_smart_warehouse_48x48x3.sdf
+  min_x: -24.0
+  max_x: 24.0
+  min_y: -24.0
+  max_y: 24.0
+  resolution: 0.25
+
+astar:
+  robot_radius: 0.80
+  obstacle_model_prefix: "z"
+  obstacle_name_contains: "_rack_"
+  allow_diagonal: true
+
+allocator:
+  minimum_battery_percent: 15.0
+  workload_weight: 2.0
+  battery_weight: 0.05
+  priority_weight: 1.5

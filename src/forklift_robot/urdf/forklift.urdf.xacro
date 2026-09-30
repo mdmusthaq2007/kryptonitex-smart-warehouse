@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="kryptonitex_forklift">
+  <xacro:property name="wheel_r" value="0.05"/>
+  <xacro:property name="chassis_l" value="1.59"/>
+  <xacro:property name="chassis_w" value="1.115"/>
+  <xacro:property name="chassis_h" value="0.23"/>
+  <xacro:property name="mast_h" value="3.2"/>
+  <xacro:property name="fork_l" value="0.99"/>
+  <xacro:property name="fork_w" value="0.10"/>
+
+  <link name="base_link"/>
+  <link name="chassis_link">
+    <visual><origin xyz="0 0 0.115"/><geometry><box size="${chassis_l} ${chassis_w} ${chassis_h}"/></geometry></visual>
+    <collision><origin xyz="0 0 0.115"/><geometry><box size="${chassis_l} ${chassis_w} ${chassis_h}"/></geometry></collision>
+    <inertial><origin xyz="0 0 0.115"/><mass value="30"/><inertia ixx="3.52" iyy="6.59" izz="7.04" ixy="0" ixz="0" iyz="0"/></inertial>
+  </link>
+  <joint name="chassis_joint" type="fixed"><parent link="base_link"/><child link="chassis_link"/><origin xyz="-0.1 0 0"/></joint>
+
+  <link name="left_wheel"><visual><geometry><cylinder radius="${wheel_r}" length="0.04"/></geometry></visual><collision><geometry><cylinder radius="${wheel_r}" length="0.04"/></geometry></collision><inertial><mass value="0.1"/><inertia ixx="0.0001" iyy="0.0001" izz="0.000125"/></inertial></link>
+  <joint name="left_wheel_joint" type="continuous"><parent link="base_link"/><child link="left_wheel"/><origin xyz="0.795 0.5575 0.05" rpy="-1.5708 0 0"/><axis xyz="0 0 1"/></joint>
+  <link name="right_wheel"><visual><geometry><cylinder radius="${wheel_r}" length="0.04"/></geometry></visual><collision><geometry><cylinder radius="${wheel_r}" length="0.04"/></geometry></collision><inertial><mass value="0.1"/><inertia ixx="0.0001" iyy="0.0001" izz="0.000125"/></inertial></link>
+  <joint name="right_wheel_joint" type="continuous"><parent link="base_link"/><child link="right_wheel"/><origin xyz="0.795 -0.5575 0.05" rpy="1.5708 0 0"/><axis xyz="0 0 -1"/></joint>
+
+  <link name="caster_wheel"><visual><geometry><sphere radius="0.05"/></geometry></visual><collision><geometry><sphere radius="0.05"/></geometry></collision><inertial><mass value="0.1"/><inertia ixx="0.0001" iyy="0.0001" izz="0.0001"/></inertial></link>
+  <joint name="caster_joint" type="fixed"><parent link="chassis_link"/><child link="caster_wheel"/><origin xyz="-0.53 0 0.05"/></joint>
+
+  <link name="mast"><visual><origin xyz="0 0 1.6"/><geometry><box size="0.25 1.115 3.2"/></geometry></visual><collision><origin xyz="0 0 1.6"/><geometry><box size="0.25 1.115 3.2"/></geometry></collision><inertial><origin xyz="0 0 1.6"/><mass value="5"/><inertia ixx="4.9" iyy="4.3" izz="1.1"/></inertial></link>
+  <joint name="mast_joint" type="fixed"><parent link="chassis_link"/><child link="mast"/><origin xyz="0.88 0 0"/></joint>
+
+  <link name="fork_carriage"><visual><origin xyz="0 0 0.61"/><geometry><box size="0.035 1.05 1.22"/></geometry></visual><collision><origin xyz="0 0 0.61"/><geometry><box size="0.035 1.05 1.22"/></geometry></collision><inertial><origin xyz="0 0 0.61"/><mass value="0.5"/><inertia ixx="0.08" iyy="0.08" izz="0.05"/></inertial></link>
+  <joint name="fork_base_joint" type="prismatic"><parent link="mast"/><child link="fork_carriage"/><origin xyz="0.15 0 0"/><axis xyz="0 0 1"/><limit lower="-0.05" upper="2.5" effort="1000" velocity="0.5"/></joint>
+
+  <link name="left_fork"><visual><origin xyz="0.495 -0.475 0.02"/><geometry><box size="${fork_l} ${fork_w} 0.045"/></geometry></visual><collision><origin xyz="0.495 -0.475 0.02"/><geometry><box size="${fork_l} ${fork_w} 0.045"/></geometry></collision><inertial><mass value="0.05"/><inertia ixx="0.001" iyy="0.004" izz="0.004"/></inertial></link>
+  <joint name="left_fork_joint" type="fixed"><parent link="fork_carriage"/><child link="left_fork"/></joint>
+  <link name="right_fork"><visual><origin xyz="0.495 0.475 0.02"/><geometry><box size="${fork_l} ${fork_w} 0.045"/></geometry></visual><collision><origin xyz="0.495 0.475 0.02"/><geometry><box size="${fork_l} ${fork_w} 0.045"/></geometry></collision><inertial><mass value="0.05"/><inertia ixx="0.001" iyy="0.004" izz="0.004"/></inertial></link>
+  <joint name="right_fork_joint" type="fixed"><parent link="fork_carriage"/><child link="right_fork"/></joint>
+
+  <link name="laser_frame"/>
+  <joint name="laser_joint" type="fixed"><parent link="chassis_link"/><child link="laser_frame"/><origin xyz="0 0 0.65"/></joint>
+  <gazebo reference="laser_frame">
+    <sensor name="lidar" type="gpu_lidar">
+      <topic>/scan</topic><update_rate>10</update_rate><always_on>true</always_on>
+      <lidar><scan><horizontal><samples>360</samples><resolution>1</resolution><min_angle>-3.14159</min_angle><max_angle>3.14159</max_angle></horizontal></scan><range><min>0.2</min><max>20.0</max><resolution>0.01</resolution></range></lidar>
+    </sensor>
+  </gazebo>
+
+  <ros2_control name="GazeboSimSystem" type="system">
+    <hardware><plugin>gz_ros2_control/GazeboSimSystem</plugin></hardware>
+    <joint name="left_wheel_joint"><command_interface name="velocity"/><state_interface name="position"/><state_interface name="velocity"/></joint>
+    <joint name="right_wheel_joint"><command_interface name="velocity"/><state_interface name="position"/><state_interface name="velocity"/></joint>
+    <joint name="fork_base_joint"><command_interface name="position"/><state_interface name="position"/><state_interface name="velocity"/></joint>
+  </ros2_control>
+  <gazebo>
+    <plugin filename="libgz_ros2_control-system.so" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <parameters>$(find forklift_robot)/config/controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
+</robot>

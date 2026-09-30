@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>task_allocator</name>
+  <version>0.1.0</version>
+  <description>Local task allocator for the Kryptonitex AMR fleet.</description>
+  <maintainer email="team@kryptonitex.invalid">Kryptonitex</maintainer>
+  <license>MIT</license>
+  <depend>rclpy</depend>
+  <depend>task_msgs</depend>
+  <export><build_type>ament_python</build_type></export>
+</package>
